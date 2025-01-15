@@ -27,16 +27,15 @@ function Slider() {
     "value" : 100
   }]
   const handleNextCard = (e)=> {
-e.preventDefault()
+// e.preventDefault()
     if (currentIndex < cardData.length - 1) {
       setAnimationDirection('slide-left'); // Set animation direction
       setTimeout(() => setcurrentIndex(currentIndex + 1), 100); 
      
   }
-  else if (currentIndex == 3 && cardData.length == 4) {
-    window.location.href = "./Home.jsx"
-  }
 }
+
+
 console.log(currentIndex);
 
   return (

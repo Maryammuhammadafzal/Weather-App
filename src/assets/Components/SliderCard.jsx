@@ -14,7 +14,7 @@ import "react-circular-progressbar/dist/styles.css";
 
 function SliderCard(props) {
 let {title , description , value , nextCard} = props;
-
+let [isNavigate , setNavigate] = useState("");
 
 
 
@@ -36,8 +36,17 @@ let {title , description , value , nextCard} = props;
                {description}
               </div>
              <div label="Arbitrary content" className="w-20" id="progress_bar">
-                <CircularProgressbarWithChildren value={value}>
-                  <FaArrowRight size={25} onClick={nextCard}/>
+                <CircularProgressbarWithChildren value={value} >
+                  <FaArrowRight
+                  size={25}
+                  onClick={() => {
+                    if (value < 100) {
+                      nextCard(); // Call the nextCard function
+                    } else {
+                      isNavigate("/") // Redirect to the homepage
+                    }
+                  }}
+                />
                 </CircularProgressbarWithChildren>
               </div>
             </div>
