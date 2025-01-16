@@ -27,17 +27,12 @@ function Slider() {
     "value" : 100
   }]
   const handleNextCard = (e)=> {
-// e.preventDefault()
     if (currentIndex < cardData.length - 1) {
-      setAnimationDirection('slide-left'); // Set animation direction
+      setAnimationDirection('slide-left');
       setTimeout(() => setcurrentIndex(currentIndex + 1), 100); 
      
   }
 }
-
-
-console.log(currentIndex);
-
   return (
      <div className="w-[100%] h-full flex flex-col justify-center items-center overflow-hidden slider-container " >
       <div

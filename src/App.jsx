@@ -1,15 +1,15 @@
 import { useState } from "react";
 import Loading from "./assets/Pages/Loading";
-import Slider from "./assets/Pages/Slider";
+import Home from "./assets/Pages/Home";
 
 function App() {
   let [isLoading, setLoading] = useState(true);
-  setTimeout(() => {
+   setTimeout(() => {
     setLoading(false);
   });
 
   return <>
-  {isLoading ? <Loading /> : <Slider/>}
+  {isLoading ? <Loading /> : <Home />}
   </>;
 }
 

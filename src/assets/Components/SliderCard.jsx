@@ -1,9 +1,7 @@
 import React , {useState} from "react";
 import "./sliderCard.css"
-// import { render } from "react-dom";
-import { FaArrowRight } from "react-icons/fa";
 
-// Import react-circular-progressbar module and styles
+import { FaArrowRight } from "react-icons/fa";
 import {
   CircularProgressbar,
   CircularProgressbarWithChildren,
@@ -14,8 +12,7 @@ import "react-circular-progressbar/dist/styles.css";
 
 function SliderCard(props) {
 let {title , description , value , nextCard} = props;
-let [isNavigate , setNavigate] = useState("");
-
+ 
 
 
   return (
@@ -40,11 +37,7 @@ let [isNavigate , setNavigate] = useState("");
                   <FaArrowRight
                   size={25}
                   onClick={() => {
-                    if (value < 100) {
-                      nextCard(); // Call the nextCard function
-                    } else {
-                      isNavigate("/") // Redirect to the homepage
-                    }
+                   nextCard()
                   }}
                 />
                 </CircularProgressbarWithChildren>
