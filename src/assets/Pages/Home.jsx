@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
+import axios from 'axios';
 import Slider from './Slider.jsx';
 import WeatherIcon from "../Images/weather-logo.png"
 
@@ -6,17 +7,22 @@ console.log(Slider);
 
 
 function Home() {
+  let userCityRef = useRef(null)
+  
+let API_key  = "39311301e10d680d24c0d03fcd69c1e8"
+  console.log(`https://pro.openweathermap.org/data/2.5/forecast/hourly?lat={lat}&lon={lon}&appid=${API_key}`);
+  
   
   return (
     <>
-    <div className='w-full h-screen flex bg-white p-3'>
-      <div className="row1 w-full h-14 flex justify-start p-2 items-center bg-slate-500">
-        <div className="col1 w-fit h-full p-2">
+    <div className='w-full h-screen flex bg-white p-3 font-mono'>
+      <div className="row1 w-full h-14 flex justify-start p-2 items-center">
+        <div className="col1 w-fit h-full p-2 items-center flex">
           <p className='text-black text-sm uppercase font-extrabold'>Weather.Weather</p>
         </div>
-        <div className="col2 w-fit h-full p-2">
-          <img src={WeatherIcon} alt="" />
-        <p className='text-gray-400 text-base'></p>
+        <div className="col2 w-fit h-full p-2 flex items-center gap-3">
+          <img src={WeatherIcon} className="w-8 h-8" alt="logo" />
+        <p className='text-gray-500 font-semibold w-18 h-4 text-sm'>Maryam Afzal</p>
         </div>
       </div>
       <div className="row2">
@@ -29,6 +35,7 @@ function Home() {
         </div>
         <div className="col3">
           <table> 
+            <tbody>
             <tr>
               <td className='text-xs text-gray-300 '></td>
               <td className='text-xs text-gray-300 '></td>
@@ -47,6 +54,7 @@ function Home() {
               <td className='text-base text-black '></td>
               <td className='text-base text-black '></td>
             </tr>
+            </tbody>
           </table>
         </div>
       </div>
