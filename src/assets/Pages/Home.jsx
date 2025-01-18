@@ -90,7 +90,7 @@
 //             </form>
 //           </div>
 //           <div className="row2 w-full h-32 bg-slate-500 flex items-center justify-between">
-//             <div className="col1 w-96 h-32 items-center flex justify-center">
+//             <div className="col1 w-96 h-32 items-center flex justify-center"> 
 //               <img src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`} alt="icon" className="w-40 h-full" />
 //             <div className="col2 w-52 h-32 flex items-center gap-2 ">
 //               <h1 className="text-black text-5xl font-bold">
@@ -264,6 +264,7 @@ function Home() {
   const [cityName, setCityName] = useState("London"); // Default city
   const [error, setError] = useState(null);
 
+
   const daysName = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const getWeeklyForecast = async (city) => {
@@ -274,33 +275,49 @@ function Home() {
       const geoResponse = await axios.get(
         `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en`
       );
-console.log(geoResponse?.data?.results[0]?.name);
+// console.log(geoResponse?.data?.results[0]?.latitude);
+
+    let latitude = geoResponse?.data?.results[0]?.latitude;
+    let longitude = geoResponse?.data?.results[0]?.longitude;
 
       if (!geoResponse?.data?.results?.length) {
         throw new Error("City not found");
       }
-
-      const { latitude, longitude , name , country } = geoResponse?.data?.results[0]; // Get latitude and longitude
+      // const { latitude, longitude } = geoResponse?.data?.results[0]; // Get latitude and longitude
 
       // Fetch weather data from Open-Meteo API
       const weatherResponse = await axios.get(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`
       );
-    console.log(weatherResponse?.data.daily);
+    // console.log(weatherResponse);
     
-      setForecast(weatherResponse.data.daily); // Update forecast
+      setForecast(weatherResponse?.data); // Update forecast
     } catch (err) {
-      setError(err.message || "Failed to fetch weather data");
+      // setError(err.message || "Failed to fetch weather data");
+      console.log(err.message);
+      
     }
   };
 
+  let forecastArray = [];
+  forecastArray.push(forecast)
+  // forecastArray.map((weather , index) => {
+  //   console.log(weather , index);
+    
+  // })
+  useEffect(() => {
+    if (forecastArray < 0) {
+  
+  console.log(forecastArray[0])
+    }
+  }, [forecast]);
   useEffect(() => {
     getWeeklyForecast(cityName); // Fetch weather for the default city on mount
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const userCity = userCityRef.current.value.trim();
+    const userCity = userCityRef?.current?.value;
     if (userCity) {
       setCityName(userCity);
       getWeeklyForecast(userCity);
@@ -308,7 +325,13 @@ console.log(geoResponse?.data?.results[0]?.name);
       setError("Please enter a valid city name");
     }
   };
+  forecastArray.map((day , index)=> {
 
+    console.log(day);
+  })
+
+  
+  
   return (
     <div className="w-full h-screen flex bg-white p-3 font-mono flex-col">
       {/* Header */}
@@ -353,33 +376,170 @@ console.log(geoResponse?.data?.results[0]?.name);
       )}
 
       {/* Weather Forecast */}
-      {forecast.length > 0 ? (
-        <div className="row2 w-full h-80 flex justify-center items-center gap-3 mx-2">
-          {forecast.map((day, index) => (
-            <div
-              key={index}
-              className="col1 w-1/3 h-[19rem] border border-neutral-700 p-2"
-            >
-              <h3 className="text-sky-600 text-lg">
-                {daysName[new Date(day.date).getDay()]}
-              </h3>
+      {forecast ? (
+        <div className="row2 w-full h-80 flex justify-center items-center gap-3 mx-2" key={cityName}>
+          {forecastArray.map((day, index) => (
+            <>
+             <div key={index} className="col1 w-96 h-32 items-center flex justify-center">
+              
+              {/* <img src={`https://openweathermap.org/img/wn/${day}@2x.png`} alt="icon" className="w-40 h-full" /> */}
+            <div className="col2 w-52 h-32 flex items-center gap-2 ">
+              <h1 className="text-black text-5xl font-bold">
+                {day.latitude}
+              {/* {day.weather[0].main == "Clouds" ? "Cloudy" : day.weather[0].main} */}
+              </h1>
+
+              {/* <h1 className="text-gray-400 text-4xl font-bold">{Math.round(day.main.temp)}<span className="text-3xl">°C</span> </h1> */}
+            </div>
+            </div>
+            <div className="col3 w-80 h-32">
+              {/* <MyCalendar /> */}
+              <table>
+          <tbody>
+            <tr>
+              <td className="text-xs text-gray-300 "></td>
+              <td className="text-xs text-gray-300 "></td>
+              <td className="text-xs text-gray-300 "></td>
+              <td className="text-xs text-gray-300 "></td>
+              <td className="text-xs text-gray-300 "></td>
+              <td className="text-xs text-gray-300 "></td>
+              <td className="text-xs text-gray-300 "></td>
+            </tr>
+            <tr>
+              <td className="text-base text-black "></td>
+              <td className="text-base text-black "></td>
+              <td className="text-base text-black "></td>
+              <td className="text-base text-black "></td>
+              <td className="text-base text-black "></td>
+              <td className="text-base text-black "></td>
+              <td className="text-base text-black "></td>
+            </tr>
+          </tbody>
+        </table>
+            </div>
+         
+          <div className="row3 w-full h-80 flex justify-center items-center gap-3 mx-2">
+            <div className="col1 w-1/3 h-[19rem] border border-neutral-700 p-2">
+              <h3 className="text-sky-600 text-lg"> Forecast</h3>
               <div className="innerCol w-full p-2 h-[17rem]">
-                <div className="flex justify-center">
-                  <img
-                    src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
-                    alt="Weather Icon"
-                    className="w-20 h-20"
-                  />
+                <div className="row1 w-full h-1/5 flex">
+                  <p className="flex w-10 h-fit justify-center items-center">
+                    {/* <img src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`} alt="today_icon" className="w-10 h-10" /> */}
+                    {/* <span className="text-sm text-black">{day.dt_txt.includes("12:00:00") ? "Today" : day.dt_text}</span> */}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
                 </div>
-                <h1 className="text-black text-2xl font-bold text-center">
-                  {day.weather[0].main}
-                </h1>
-                <h2 className="text-gray-500 text-center">
-                  Max: {day.temperature_2m_max}°C | Min: {day.temperature_2m_min}
-                  °C
-                </h2>
+                <div className="row2">
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
+                <div className="row3">
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
+                <div className="row4">
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
+                <div className="row5">
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
               </div>
             </div>
+            <div className="col2 w-1/3 border h-[19rem] border-neutral-700 p-2">
+              <h3 className="text-sky-600 text-lg"></h3>
+              <div className="innerCol">
+                <div className="row1">
+                  <p>
+                    <p></p>
+                    <p></p>
+                  </p>
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                </div>
+                <div className="row2">
+                  <p>
+                    <p></p>
+                    <p></p>
+                  </p>
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                </div>
+                <div className="row3">
+                  <p>
+                    <p></p>
+                    <p></p>
+                  </p>
+                  <p>
+                    <img src="" alt="" />
+                    <p className="text-sm text-black"></p>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="col3 w-1/3 border border-neutral-700 h-[19rem] p-2">
+              <h3 className="text-sky-600 text-lg"></h3>
+              <div className="innerCol">
+                <div className="row1">
+                  <p>
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
+                <div className="row2">
+                  <p>
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
+                <div className="row3">
+                  <p>
+                    <p className="text-sm text-black"></p>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <p className="progressBar"></p>
+                  </p>
+                </div>
+                <p></p>
+              </div>
+            </div>
+          </div>
+          <div className="row4">
+            <div className="col1"></div>
+            <div className="col2"></div>
+          </div>
+            </>
           ))}
         </div>
       ) : (
@@ -390,3 +550,6 @@ console.log(geoResponse?.data?.results[0]?.name);
 }
 
 export default Home;
+// Max: {day.temperature_2m_max}°C | Min: {day.temperature_2m_min}°C
+// {daysName[new Date(day.date).getDay()]}
+// {/* {day.weather[0].main} */}
