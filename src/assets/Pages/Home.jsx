@@ -1,3 +1,4 @@
+
 // import React, { useRef, useState, useEffect } from "react";
 // import axios from "axios";
 // import MyCalendar from "../Components/MyCalendar.jsx";
@@ -256,18 +257,37 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
-import WeatherIcon from "../Images/weather-logo.png";
+
+import WeatherWebIcon from "../Images/weather-logo.png";
 
 function Home() {
   const userCityRef = useRef("");
   const [forecast, setForecast] = useState([]);
+  const [WeatherIcon , setWeatherIcon] = useState([]);
   const [cityName, setCityName] = useState("London"); // Default city
   const [error, setError] = useState(null);
+
+// Get weather icons 
+const getWeatherIcon = async (city) => {
+
+
+  let APIkey = "39311301e10d680d24c0d03fcd69c1e8";
+  try {
+    let response = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APIkey}&units=metric`
+    );
+    setWeatherIcon([response.data]);
+    
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 
   const daysName = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const getWeeklyForecast = async (city) => {
+    getWeatherIcon(cityName)
     try {
       setError(null); // Clear any previous errors
 
@@ -275,7 +295,6 @@ function Home() {
       const geoResponse = await axios.get(
         `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en`
       );
-// console.log(geoResponse?.data?.results[0]?.latitude);
 
     let latitude = geoResponse?.data?.results[0]?.latitude;
     let longitude = geoResponse?.data?.results[0]?.longitude;
@@ -283,17 +302,15 @@ function Home() {
       if (!geoResponse?.data?.results?.length) {
         throw new Error("City not found");
       }
-      // const { latitude, longitude } = geoResponse?.data?.results[0]; // Get latitude and longitude
 
       // Fetch weather data from Open-Meteo API
       const weatherResponse = await axios.get(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`
       );
-    // console.log(weatherResponse);
     
       setForecast(weatherResponse?.data); // Update forecast
     } catch (err) {
-      // setError(err.message || "Failed to fetch weather data");
+      setError(err.message || "Failed to fetch weather data");
       console.log(err.message);
       
     }
@@ -301,18 +318,18 @@ function Home() {
 
   let forecastArray = [];
   forecastArray.push(forecast)
-  // forecastArray.map((weather , index) => {
-  //   console.log(weather , index);
-    
-  // })
+
   useEffect(() => {
-    if (forecastArray < 0) {
-  
   console.log(forecastArray[0])
-    }
+    
   }, [forecast]);
   useEffect(() => {
     getWeeklyForecast(cityName); // Fetch weather for the default city on mount
+  }, []);
+  useEffect(() => {
+    getWeatherIcon(cityName); // Fetch weather for the default city on mount
+    console.log(WeatherIcon);
+    
   }, []);
 
   const handleSearch = (e) => {
@@ -325,9 +342,12 @@ function Home() {
       setError("Please enter a valid city name");
     }
   };
-  forecastArray.map((day , index)=> {
-
-    console.log(day);
+  let weatherIcon;
+  let weatherType;
+  WeatherIcon.map((icon , index)=> {
+   weatherIcon = icon.weather[0].icon;
+   weatherType = icon.weather[0].main;
+    console.log(icon);
   })
 
   
@@ -342,7 +362,7 @@ function Home() {
           </p>
         </div>
         <div className="col2 w-fit h-full p-2 flex items-center gap-3 mx-3">
-          <img src={WeatherIcon} className="w-8 h-8" alt="logo" />
+          <img src={WeatherWebIcon} className="w-8 h-8" alt="logo" />
           <p className="text-gray-500 font-semibold w-18 h-4 text-sm">
             {cityName}
           </p>
@@ -377,19 +397,21 @@ function Home() {
 
       {/* Weather Forecast */}
       {forecast ? (
-        <div className="row2 w-full h-80 flex justify-center items-center gap-3 mx-2" key={cityName}>
+        <div className="row2 w-full h-[32rem] flex justify-center items-center gap-3 mx-2 flex-col" key={cityName}>
           {forecastArray.map((day, index) => (
             <>
-             <div key={index} className="col1 w-96 h-32 items-center flex justify-center">
+
+            <div className="flex w-full h-44 items-center">
+
+            <div key={index} className="col1 w-72 h-32 items-center flex justify-center p-3">
               
-              {/* <img src={`https://openweathermap.org/img/wn/${day}@2x.png`} alt="icon" className="w-40 h-full" /> */}
+              {console.log(weatherIcon)}
+              <img src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="icon" className="w-40 h-full" />
             <div className="col2 w-52 h-32 flex items-center gap-2 ">
               <h1 className="text-black text-5xl font-bold">
-                {day.latitude}
-              {/* {day.weather[0].main == "Clouds" ? "Cloudy" : day.weather[0].main} */}
+                {weatherType == "Clouds" ? "Cloudy" : weatherType}
               </h1>
-
-              {/* <h1 className="text-gray-400 text-4xl font-bold">{Math.round(day.main.temp)}<span className="text-3xl">°C</span> </h1> */}
+              <h1 className="text-gray-400 text-4xl font-bold">{day?.daily?.temperature_2m_max[0]}<span className="text-3xl">{day?.daily_units?.temperature_2m_max}</span> </h1>
             </div>
             </div>
             <div className="col3 w-80 h-32">
@@ -417,125 +439,132 @@ function Home() {
           </tbody>
         </table>
             </div>
+            </div>
          
           <div className="row3 w-full h-80 flex justify-center items-center gap-3 mx-2">
             <div className="col1 w-1/3 h-[19rem] border border-neutral-700 p-2">
               <h3 className="text-sky-600 text-lg"> Forecast</h3>
               <div className="innerCol w-full p-2 h-[17rem]">
-                <div className="row1 w-full h-1/5 flex">
-                  <p className="flex w-10 h-fit justify-center items-center">
-                    {/* <img src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`} alt="today_icon" className="w-10 h-10" /> */}
-                    {/* <span className="text-sm text-black">{day.dt_txt.includes("12:00:00") ? "Today" : day.dt_text}</span> */}
+                <div className="row1 w-full items-center justify-between h-1/5 flex border-b border-b-neutral-700">
+                  <p className="flex w-1/3 h-fit justify-start items-center">
+                    <img src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="today_icon" className="w-6 h-6" />
+                    <span className="text-sm text-black">Tommorrow</span>
                   </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
-                  </p>
-                </div>
-                <div className="row2">
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
+                  <p className="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">
+                  {day?.daily?.temperature_2m_min[1]}  
+                   <span className="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>
+                   {day?.daily?.temperature_2m_max[1]}
                   </p>
                 </div>
-                <div className="row3">
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
+                <div className="row2 w-full items-center justify-between h-1/5 flex border-b border-b-neutral-700">
+                  <p className="flex w-1/3 h-fit justify-start items-center">
+                    <img src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="today_icon" className="w-6 h-6" />
+                    <span className="text-sm text-black">Tommorrow</span>
                   </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
-                  </p>
-                </div>
-                <div className="row4">
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
+                  <p className="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">
+                  {day?.daily?.temperature_2m_min[2]}  
+                   <span className="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>
+                   {day?.daily?.temperature_2m_max[2]}
                   </p>
                 </div>
-                <div className="row5">
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
+                <div className="row3 w-full items-center justify-between h-1/5 flex border-b border-b-neutral-700">
+                  <p className="flex w-1/3 h-fit justify-start items-center">
+                    <img src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="today_icon" className="w-6 h-6" />
+                    <span className="text-sm text-black">Tommorrow</span>
                   </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
+                  <p className="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">
+                  {day?.daily?.temperature_2m_min[3]}  
+                   <span className="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>
+                   {day?.daily?.temperature_2m_max[3]}
+                  </p>
+                </div>
+                <div className="row4 w-full items-center justify-between h-1/5 flex border-b border-b-neutral-700">
+                  <p className="flex w-1/3 h-fit justify-start items-center">
+                    <img src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="today_icon" className="w-6 h-6" />
+                    <span className="text-sm text-black">Tommorrow</span>
+                  </p>
+                  <p className="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">
+                  {day?.daily?.temperature_2m_min[4]}  
+                   <span className="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>
+                   {day?.daily?.temperature_2m_max[4]}
+                  </p>
+                </div>
+                <div className="row5 w-full items-center justify-between h-1/5 flex">
+                  <p className="flex w-1/3 h-fit justify-start items-center">
+                    <img src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="today_icon" className="w-6 h-6" />
+                    <span className="text-sm text-black">Tommorrow</span>
+                  </p>
+                  <p className="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">
+                  {day?.daily?.temperature_2m_min[5]}  
+                   <span className="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300">
+                    <p className={`w-${Math.round((day?.daily?.temperature_2m_max[5] + day?.daily?.temperature_2m_min[5])/2)}rem h-full rounded-3xl bg-black`}></p>
+                   </span>
+                   {day?.daily?.temperature_2m_max[5]}
                   </p>
                 </div>
               </div>
             </div>
             <div className="col2 w-1/3 border h-[19rem] border-neutral-700 p-2">
-              <h3 className="text-sky-600 text-lg"></h3>
-              <div className="innerCol">
-                <div className="row1">
-                  <p>
-                    <p></p>
-                    <p></p>
+              <h3 className="text-sky-600 text-lg">Precipitation Total</h3>
+              <div className="innerCol w-full p-2 h-[17rem]">
+                <div className="row1 h-1/3 w-full border-b border-b-neutral-400 flex flex-col pt-2">
+                  <p className="flex w-full  justify-between h-5">
+                    <p className="text-xs text-neutral-400 tracking-tighter leading-tighter uppercase">Last 24 hours</p>
+                    <p className="text-xs text-sky-600 tracking-tighter leading-tighter" >{Math.max(...(day?.hourly?.precipitation || []))} mm</p>
                   </p>
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
-                  </p>
-                </div>
-                <div className="row2">
-                  <p>
-                    <p></p>
-                    <p></p>
-                  </p>
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
+                  <p className="flex w-36 gap-3 items-center justify-start h-10">
+                    <img className="w-10" src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="icon" />
+                    <span className="w-20 text-sm text-black">{Math.max(...(day?.hourly?.temperature_2m || []))} °C</span>
                   </p>
                 </div>
-                <div className="row3">
-                  <p>
-                    <p></p>
-                    <p></p>
+                <div className="row2 h-1/3 w-full border-b border-b-neutral-400 flex flex-col pt-2">
+                  <p className="flex w-full  justify-between h-5">
+                    <p className="text-xs text-neutral-400 tracking-tighter leading-tighter uppercase">next 24 hours</p>
+                    <p className="text-xs text-sky-600 tracking-tighter leading-tighter" >{Math.max(...(day?.hourly?.precipitation || []))} mm</p>
                   </p>
-                  <p>
-                    <img src="" alt="" />
-                    <p className="text-sm text-black"></p>
+                  <p className="flex w-36 gap-3 items-center justify-start h-10">
+                    <img className="w-10" src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="icon" />
+                    <span className="w-20 text-sm text-black">{Math.max(...(day?.hourly?.temperature_2m || []))} °C</span>
+                  </p>
+                </div>
+                <div className="row3 h-1/3 w-full flex flex-col pt-2">
+                  <p className="flex w-full  justify-between h-5">
+                    <p className="text-xs text-neutral-400 tracking-tighter leading-tighter uppercase">Last week</p>
+                    <p className="text-xs text-sky-600 tracking-tighter leading-tighter" >{Math.max(...(day?.hourly?.precipitation || []))} mm</p>
+                  </p>
+                  <p className="flex w-36 gap-3 items-center justify-start h-10">
+                    <img className="w-10" src={`https://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt="icon" />
+                    <span className="w-20 text-sm text-black">{Math.max(...(day?.hourly?.temperature_2m || []))} °C</span>
                   </p>
                 </div>
               </div>
             </div>
             <div className="col3 w-1/3 border border-neutral-700 h-[19rem] p-2">
-              <h3 className="text-sky-600 text-lg"></h3>
-              <div className="innerCol">
-                <div className="row1">
+              <h3 className="text-sky-600 text-lg">Comparision By day</h3>
+              <div className="innerCol  w-full p-2 h-[17rem]">
+                <div className="row1 w-full items-center justify-between h-1/4 flex border-b border-b-neutral-700">
                   <p>
-                    <p className="text-sm text-black"></p>
+                    <span className="text-sm text-black">Today</span>
                   </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
-                  </p>
+                  <p class="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">{day?.daily?.temperature_2m_min[0]}<span class="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>{day?.daily?.temperature_2m_max[0]}</p>
                 </div>
-                <div className="row2">
+                <div className="row1 w-full items-center justify-between h-1/4 flex border-b border-b-neutral-700">
                   <p>
-                    <p className="text-sm text-black"></p>
+                    <span className="text-sm text-black">Yesterday</span>
                   </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
-                  </p>
+                  <p class="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">{day?.daily?.temperature_2m_min[6]}<span class="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>{day?.daily?.temperature_2m_max[6]}</p>
                 </div>
-                <div className="row3">
+                <div className="row1 w-full items-center justify-between h-1/4 flex">
                   <p>
-                    <p className="text-sm text-black"></p>
+                    <span className="text-sm text-black">Tommorrow</span>
                   </p>
-                  <p className="text-xs text-gray-400">
-                    <p className="progressBar"></p>
-                  </p>
+                  <p class="text-xs w-2/3 h-10 gap-3 items-center justify-center flex text-gray-400">{day?.daily?.temperature_2m_min[2]}<span class="w-52 h-[5px] rounded-3xl flex items-center justify-center bg-neutral-300"></span>{day?.daily?.temperature_2m_max[2]}</p>
                 </div>
-                <p></p>
+                <p className="w-full h-1/4 text-neutral-500 px-2" >{day?.daily?.temperature_2m_min[0] < day?.daily?.temperature_2m_min[6] ? "The maximum temperature is lower today than yesterday" : "The maximum temperature is higher today than yesterday"}</p>
               </div>
             </div>
           </div>
-          <div className="row4">
+          <div className="row4 h-80 w-full">
             <div className="col1"></div>
             <div className="col2"></div>
           </div>
